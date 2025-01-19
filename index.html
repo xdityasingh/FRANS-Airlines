@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seat Reservation System</title>
+    <style>
+        .available { background-color: green; color: white; cursor: pointer; }
+        .occupied { background-color: red; color: white; cursor: not-allowed; }
+        .ghost { background-color: gray; color: white; cursor: pointer; }
+        table { border-collapse: collapse; margin: auto; }
+        td { padding: 10px; text-align: center; }
+        td:hover { opacity: 0.8; }
+    </style>
+    <script>
+        function reserveSeat(seatId) {
+            fetch("/reserve", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ seat_id: seatId })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    location.reload();
+                } else {
+                    alert(data.error);
+                }
+            });
+        }
+    </script>
+</head>
+<body>
+    <h1>Seat Reservation System</h1>
+    <table border="1">
+        {% for seat in seats %}
+            {% if loop.index0 % 6 == 0 %}
+                <tr>
+            {% endif %}
+            <td class="{{ seat['Status'] }}" onclick="reserveSeat('{{ seat['Seat ID'] }}')">
+                {{ seat['Seat ID'] }}
+            </td>
+            {% if loop.index0 % 6 == 5 %}
+                </tr>
+            {% endif %}
+        {% endfor %}
+    </table>
+</body>
+</html>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seat Chart</title>
+    <style>
+        .seat-row {
+            font-family: monospace;
+            font-size: 1.5em;
+            margin-bottom: 10px;
+        }
+        .seat {
+            width: 30px;
+            text-align: center;
+        }
+        .aisle {
+            width: 20px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <h1>Seat Chart</h1>
+    <div>
+        {% for row_left, row_right in zip(left_side, right_side) %}
+            <div class="seat-row">
+                <div class="seat">{{ row_left[0] }}</div>
+                <div class="seat">{{ row_left[1] }}</div>
+                <div class="seat">{{ row_left[2] }}</div>
+                <div class="aisle">|</div>
+                <div class="seat">{{ row_right[0] }}</div>
+                <div class="seat">{{ row_right[1] }}</div>
+                <div class="seat">{{ row_right[2] }}</div>
+            </div>
+        {% endfor %}
+    </div>
+</body>
+</html>
