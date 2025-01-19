@@ -11,7 +11,6 @@ class SeatReservationSystem:
             return pd.read_csv(self.data_file)
         except FileNotFoundError:
             # Example DataFrame for testing
-            # this is a test push
             data = {
                 "Seat ID": ["1A", "1B", "2A", "2B"],
                 "Status": ["available", "available", "occupied", "available"],
