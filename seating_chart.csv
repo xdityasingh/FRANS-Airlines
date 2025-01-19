@@ -1,0 +1,5 @@
+Seat ID,Status,Category,Price
+1A,occupied,business,100
+1B,available,business,100
+2A,occupied,economy,50
+2B,available,economy,50
