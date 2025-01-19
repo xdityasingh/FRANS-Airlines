@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seat Chart</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 60%;
+            margin: 0 auto;
+        }
+        td {
+            width: 50px;
+            height: 50px;
+            text-align: center;
+            border: 1px solid black;
+            vertical-align: middle;
+        }
+        th {
+            height: 50px;
+            text-align: center;
+        }
+        .aisle {
+            background-color: white;
+            border-left: 2px solid black;
+        }
+        .seat {
+            background-color: #f0f0f0;
+            cursor: pointer;
+        }
+        .occupied {
+            background-color: #d3d3d3;
+        }
+        .header-cell {
+            background-color: #f0f0f0;
+        }
+        .reserved {
+            background-color: #f28f8f;  /* Kırmızı renk */
+        }
+        .empty {
+            background-color: white;
+            cursor: default;
+            font-size: 18px;
+            font-weight: bold;
+            color: #888;
+        }
+        .seat-symbol {
+            font-size: 18px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1 style="text-align: center;">Flight Seat Chart</h1>
+    <table>
+        <tr>
+            <th class="header-cell"></th>
+            <th class="header-cell">A</th>
+            <th class="header-cell">B</th>
+            <th class="header-cell">C</th>
+            <th class="aisle">|</th>
+            <th class="header-cell">D</th>
+            <th class="header-cell">E</th>
+            <th class="header-cell">F</th>
+        </tr>
+        {% for i in range(1, 11) %}
+        <tr>
+            <th class="header-cell">{{ i }}</th>
+            <td class="seat" id="seat_{{ i }}_A" onclick="reserveSeat('{{ i }}', 'A')">
+                <span class="seat-symbol">|_|</span>
+            </td>
+            <td class="seat" id="seat_{{ i }}_B" onclick="reserveSeat('{{ i }}', 'B')">
+                <span class="seat-symbol">|_|</span>
+            </td>
+            <td class="seat" id="seat_{{ i }}_C" onclick="reserveSeat('{{ i }}', 'C')">
+                <span class="seat-symbol">|_|</span>
+            </td>
+            <td class="aisle"></td>
+            <td class="seat" id="seat_{{ i }}_D" onclick="reserveSeat('{{ i }}', 'D')">
+                <span class="seat-symbol">|_|</span>
+            </td>
+            <td class="seat" id="seat_{{ i }}_E" onclick="reserveSeat('{{ i }}', 'E')">
+                <span class="seat-symbol">|_|</span>
+            </td>
+            <td class="seat" id="seat_{{ i }}_F" onclick="reserveSeat('{{ i }}', 'F')">
+                <span class="seat-symbol">|_|</span>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <script>
+        function reserveSeat(row, column) {
+            var seat = document.getElementById('seat_' + row + '_' + column);
+            seat.classList.toggle('reserved');
+            // You can add the logic for making a reservation here (e.g., sending to a reservation page)
+            alert('Seat ' + column + row + ' reserved!');
+        }
+    </script>
+</body>
+</html>
