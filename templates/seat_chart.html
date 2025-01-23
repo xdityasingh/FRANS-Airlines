@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seat Chart</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 50%;
+            margin: 0 auto;
+        }
+        td {
+            width: 50px;
+            height: 50px;
+            text-align: center;
+            border: 1px solid black;
+            vertical-align: middle;
+        }
+        th {
+            height: 50px;
+            text-align: center;
+        }
+        .aisle {
+            background-color: white;
+            border-left: 2px solid black;
+        }
+        .economy .seat {
+            background-color: #f0f0f0;
+            cursor: pointer;
+        }
+        .occupied {
+            background-color: red;
+            color: white;
+        }
+        .available {
+            background-color: green;
+            color: white;
+        }
+        .ghost {
+            background-color: gray;
+            color: white;
+        }
+        .header-cell {
+            background-color: #f0f0f0;
+        }
+        .first-class .seat.reserved {
+            background-color: red !important;
+        }
+
+        .business-class .seat.reserved {
+            background-color: red !important;
+        }
+        
+        .reserved {
+            background-color: red !important;
+        }
+
+        .empty {
+            background-color: white;
+            cursor: default;
+            font-size: 18px;
+            font-weight: bold;
+            color: #888;
+        }
+        .seat-symbol {
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .wing {
+            background-color: lightblue;
+        }
+        .exit {
+            background-color: yellow;
+        }
+        .toilet, .kitchen {
+            background-color: lightgray;
+        }
+        .first-class .seat {
+            background-color: gold !important;
+        }
+
+        .business-class .seat {
+            background-color: lightblue !important;
+        }
+
+        .exit-row {
+            background-color: lightyellow; /* Acil çıkış koltukları için farklı renk */
+        }
+
+        .exit-door {
+            text-align: center;
+            font-size: 1em;
+            font-weight: bold;
+            color: red; /* Acil çıkış kapısı sembolü için renk */
+        }
+
+        .wing-image {
+            width: 100%;
+            height: auto;
+        }
+
+        .left-wing {
+            left: calc(9.5% + 0px);  /* Sağ kanadın solundan biraz mesafe ekliyoruz */
+            position: absolute;  /* Konumlandırma türünü absolute yapıyoruz */
+            top: calc(11 * 60px);  /* 8. sıradan başlayarak yerleştiriyoruz (sıra yüksekliğine göre ayar yapabilirsiniz) */
+            width: 250px;  /* Kanat görsellerinin genişliği */
+            height: auto;  /* Yüksekliği oranlı şekilde ayarlıyoruz */
+        }
+
+        .right-wing {
+            left: calc(50% + 392px);  /* Sağ kanadın solundan biraz mesafe ekliyoruz */
+            position: absolute;  /* Konumlandırma türünü absolute yapıyoruz */
+            top: calc(11 * 60px);  /* 8. sıradan başlayarak yerleştiriyoruz (sıra yüksekliğine göre ayar yapabilirsiniz) */
+            width: 250px;  /* Kanat görsellerinin genişliği */
+            height: auto;  /* Yüksekliği oranlı şekilde ayarlıyoruz */
+        }
+
+    </style>
+</head>
+<body>
+    <h1 style="text-align: center;">Flight Seat Chart</h1>
+    <table>
+        <!-- Header Row -->
+        <tr>
+            <th class="header-cell"></th>
+            <th class="header-cell">A</th>
+            <th class="header-cell">B</th>
+            <th class="header-cell">C</th>
+            <th class="aisle">|</th>
+            <th class="header-cell">D</th>
+            <th class="header-cell">E</th>
+            <th class="header-cell">F</th>
+        </tr>
+
+        <!-- Toilet Row at the Top -->
+        <tr>
+            <td class="empty"></td>
+            <td colspan="3" class="toilet">🚻</td>
+            <td class="aisle"></td>
+            <td colspan="3" class="empty"></td>
+        </tr>
+
+        <!-- First Class Rows -->
+        {% for i in range(1, 4) %}
+        <tr class="first-class">
+            <th class="header-cell">{{ i }}</th>
+            <td class="seat available" id="seat_{{ i }}_A" onclick="reserveSeat('{{ i }}', 'A')">A</td>
+            <td class="seat available" id="seat_{{ i }}_B" onclick="reserveSeat('{{ i }}', 'B')">B</td>
+            <td class="seat available" id="seat_{{ i }}_C" onclick="reserveSeat('{{ i }}', 'C')">C</td>
+            <td class="aisle"></td>
+            <td class="seat available" id="seat_{{ i }}_D" onclick="reserveSeat('{{ i }}', 'D')">D</td>
+            <td class="seat available" id="seat_{{ i }}_E" onclick="reserveSeat('{{ i }}', 'E')">E</td>
+            <td class="seat available" id="seat_{{ i }}_F" onclick="reserveSeat('{{ i }}', 'F')">F</td>
+        </tr>
+        {% endfor %}
+
+        <!-- Spacer Between First and Business Class -->
+        <tr class="divider-row">
+            <td colspan="8"></td>
+        </tr>
+
+        <!-- Business Class Rows -->
+        {% for i in range(4, 8) %}
+        <tr class="business-class">
+            <th class="header-cell">{{ i }}</th>
+            <td class="seat available" id="seat_{{ i }}_A" onclick="reserveSeat('{{ i }}', 'A')">A</td>
+            <td class="seat available" id="seat_{{ i }}_B" onclick="reserveSeat('{{ i }}', 'B')">B</td>
+            <td class="seat available" id="seat_{{ i }}_C" onclick="reserveSeat('{{ i }}', 'C')">C</td>
+            <td class="aisle"></td>
+            <td class="seat available" id="seat_{{ i }}_D" onclick="reserveSeat('{{ i }}', 'D')">D</td>
+            <td class="seat available" id="seat_{{ i }}_E" onclick="reserveSeat('{{ i }}', 'E')">E</td>
+            <td class="seat available" id="seat_{{ i }}_F" onclick="reserveSeat('{{ i }}', 'F')">F</td>
+        </tr>
+        {% endfor %}
+
+        <!-- Divider Between Business and Economy -->
+        <tr class="business-divider">
+            <td colspan="8"></td>
+        </tr>
+
+        <!-- Exit Row with Emergency Doors -->
+        <tr class="exit-row">
+            <td class="empty"></td>
+            <td colspan="0.5" class="exit-door">EXIT ⬅</td> <!-- Exit door symbol -->
+            <td colspan="2.5" class="empty"></td>
+            <td class="aisle"></td>
+            <td colspan="2.5" class="empty"></td>
+            <td colspan="0.5" class="exit-door">EXIT ➡</td> <!-- Exit door symbol -->
+        </tr>
+
+       <!-- Economy Rows -->
+        {% for i in range(8, 21) %}
+        <tr>
+            <th class="header-cell">{{ i }}</th>
+            <td class="seat available" id="seat_{{ i }}_A" onclick="reserveSeat('{{ i }}', 'A')">A</td>
+            <td class="seat available" id="seat_{{ i }}_B" onclick="reserveSeat('{{ i }}', 'B')">B</td>
+            <td class="seat available" id="seat_{{ i }}_C" onclick="reserveSeat('{{ i }}', 'C')">C</td>
+            <td class="aisle"></td>
+            <td class="seat available" id="seat_{{ i }}_D" onclick="reserveSeat('{{ i }}', 'D')">D</td>
+            <td class="seat available" id="seat_{{ i }}_E" onclick="reserveSeat('{{ i }}', 'E')">E</td>
+            <td class="seat available" id="seat_{{ i }}_F" onclick="reserveSeat('{{ i }}', 'F')">F</td>
+        </tr>
+        {% endfor %}
+
+        <!-- Toilet Row at the Bottom -->
+        <tr>
+            <td class="empty"></td>
+            <td colspan="3" class="empty"></td>
+            <td class="aisle"></td>
+            <td colspan="3" class="toilet">🚻</td>
+        </tr>
+    </table>
+
+    <img src="https://github.com/mugetekin/frans-airlines/raw/main/left-wing.png" class="left-wing" alt="Left Wing">
+    <img src="https://github.com/mugetekin/frans-airlines/raw/main/right-wing.png" class="right-wing" alt="Right Wing">
+
+
+    <script>
+        function reserveSeat(row, column) {
+            const seat = document.getElementById(`seat_${row}_${column}`);
+            if (seat.classList.contains("available")) {
+                seat.classList.remove("available");
+                seat.classList.add("reserved");
+                alert(`Seat ${row}${column} reserved!`);
+            } else {
+                alert(`Seat ${row}${column} is already reserved.`);
+            }
+        }
+    </script>
+
+</body>
+</html>
