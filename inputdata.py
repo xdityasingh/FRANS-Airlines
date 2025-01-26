@@ -1,6 +1,8 @@
 from flask import Flask, render_template, request, jsonify
 import pandas as pd
 import os
+import random
+
 
 app = Flask(__name__)
 
@@ -45,6 +47,7 @@ def load_seat_data():
 
         # Convert to DataFrame and save as CSV
         df = pd.DataFrame(rows)
+        mark_random_seats_reserved(df)  # Mark random seats as reserved
         save_seat_data(df)
         return df
     else:
@@ -65,6 +68,12 @@ def classify_seat(seat):
         return "Aisle"
     return "Unknown"
 
+def mark_random_seats_reserved(df):
+    available_seats = df[df["Status"] == "Available"].index.tolist()
+    reserved_seats = random.sample(available_seats, 5)  # Select 5 random seats
+    df.loc[reserved_seats, "Status"] = "Reserved"
+
+
 # Load initial seat data
 seat_data = load_seat_data()
 
@@ -72,7 +81,7 @@ seat_data = load_seat_data()
 @app.route('/')
 def index():
     # Extract row numbers and sort them numerically
-    seat_data['Row'] = seat_data['Seat ID'].str.extract('(\d+)').astype(int)  # Extract numeric row values as integers
+    seat_data['Row'] = seat_data['Seat ID'].str.extract(r'(\d+)').astype(int) # Extract numeric row values as integers
     rows = seat_data['Row'].unique()  # Get unique row numbers
     rows.sort()  # Sort rows numerically
 
@@ -124,4 +133,3 @@ def upload():
 
 if __name__ == '__main__':
     app.run(debug=True)
-
