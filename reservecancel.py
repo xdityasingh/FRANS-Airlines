@@ -1,80 +1,85 @@
-import numpy as np
-import pandas as pd
+from flask import Flask, render_template, request, redirect, jsonify
+import csv
 
-class SeatReservationSystem:
-    def __init__(self, data_file):
-        self.data_file = data_file
-        self.seats = self.load_seats()
+app = Flask(__name__)
 
-    def load_seats(self):
-        try:
-            return pd.read_csv(self.data_file)
-        except FileNotFoundError:
-            # Example DataFrame for testing
-            data = {
-                "Seat ID": ["1A", "1B", "2A", "2B"],
-                "Status": ["available", "available", "occupied", "available"],
-                "Category": ["business", "business", "economy", "economy"],
-                "Price": [100, 100, 50, 50],
-            }
-            return pd.DataFrame(data)
+DATA_FILE = "seating_chart.csv"
 
-    def save_seats(self):
-        self.seats.to_csv(self.data_file, index=False)
+# Helper Functions
+def load_seats():
+    with open(DATA_FILE, "r") as file:
+        return list(csv.DictReader(file))
 
-    def reserve_seat(self, seat_id):
-        if seat_id not in self.seats["Seat ID"].values:
-            print("Error: Seat does not exist!")
-            return
+def save_seats(rows):
+    with open(DATA_FILE, "w", newline="") as file:
+        writer = csv.DictWriter(file, fieldnames=rows[0].keys())
+        writer.writeheader()
+        writer.writerows(rows)
 
-        seat_row = self.seats.loc[self.seats["Seat ID"] == seat_id]
-        if seat_row.iloc[0]["Status"] == "occupied":
-            print("Error: Seat is already reserved!")
-        else:
-            confirmation = input(f"Confirm reservation for seat {seat_id}? (yes/no): ").strip().lower()
-            if confirmation == "yes":
-                self.seats.loc[self.seats["Seat ID"] == seat_id, "Status"] = "occupied"
-                self.save_seats()
-                print(f"Seat {seat_id} reserved successfully!")
+def find_seat(seat_id, rows):
+    for row in rows:
+        if row["Seat ID"] == seat_id:
+            return row
+    return None
 
-    def cancel_seat(self, seat_id):
-        if seat_id not in self.seats["Seat ID"].values:
-            print("Error: Seat does not exist!")
-            return
+# Routes
+@app.route("/")
+def home():
+    seats = load_seats()
+    return render_template("seat_chart.html", seats=seats)
 
-        seat_row = self.seats.loc[self.seats["Seat ID"] == seat_id]
-        if seat_row.iloc[0]["Status"] != "occupied":
-            print("Error: Seat is not reserved!")
-        else:
-            confirmation = input(f"Confirm cancellation for seat {seat_id}? (yes/no): ").strip().lower()
-            if confirmation == "yes":
-                self.seats.loc[self.seats["Seat ID"] == seat_id, "Status"] = "available"
-                self.save_seats()
-                print(f"Reservation for seat {seat_id} canceled successfully!")
+@app.route("/reserve", methods=["POST"])
+def reserve_seat():
+    seat_id = request.json.get("seat_id")
+    rows = load_seats()
+    seat = find_seat(seat_id, rows)
+    
+    if not seat:
+        return jsonify({"success": False, "error": "Seat not found."})
+    
+    if seat["Status"] == "occupied":
+        return jsonify({"success": False, "error": "Seat is already reserved."})
+    
+    seat["Status"] = "occupied"
+    save_seats(rows)
+    return jsonify({"success": True, "message": f"Seat {seat_id} reserved successfully."})
+
+@app.route("/cancel", methods=["POST"])
+def cancel_reservation():
+    seat_id = request.json.get("seat_id")
+    rows = load_seats()
+    seat = find_seat(seat_id, rows)
+    
+    if not seat:
+        return jsonify({"success": False, "error": "Seat not found."})
+    
+    if seat["Status"] != "occupied":
+        return jsonify({"success": False, "error": "Seat is not reserved."})
+    
+    seat["Status"] = "available"
+    save_seats(rows)
+    return jsonify({"success": True, "message": f"Reservation for seat {seat_id} canceled successfully."})
+
+@app.route("/admin/override", methods=["POST"])
+def admin_override():
+    # Admin-specific route to force reservation/cancellation
+    seat_id = request.json.get("seat_id")
+    action = request.json.get("action")  # "reserve" or "cancel"
+    rows = load_seats()
+    seat = find_seat(seat_id, rows)
+    
+    if not seat:
+        return jsonify({"success": False, "error": "Seat not found."})
+    
+    if action == "reserve":
+        seat["Status"] = "occupied"
+    elif action == "cancel":
+        seat["Status"] = "available"
+    else:
+        return jsonify({"success": False, "error": "Invalid action."})
+    
+    save_seats(rows)
+    return jsonify({"success": True, "message": f"Admin override successful for seat {seat_id}."})
 
 if __name__ == "__main__":
-    system = SeatReservationSystem("seating_chart.csv")
-
-    while True:
-        print("\nSeat Reservation System")
-        print("1. Reserve a Seat")
-        print("2. Cancel a Reservation")
-        print("3. View Seat Data")
-        print("4. Exit")
-
-        choice = input("Enter your choice: ")
-
-        if choice == "1":
-            seat_id = input("Enter Seat ID to reserve: ")
-            system.reserve_seat(seat_id)
-        elif choice == "2":
-            seat_id = input("Enter Seat ID to cancel: ")
-            system.cancel_seat(seat_id)
-        elif choice == "3":
-            print("\nCurrent Seat Data:")
-            print(system.seats)
-        elif choice == "4":
-            print("Exiting...")
-            break
-        else:
-            print("Invalid choice! Please try again.")
+    app.run(debug=True)
