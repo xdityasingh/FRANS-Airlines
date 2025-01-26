@@ -10,7 +10,7 @@ app = Flask(__name__)
 # File paths
 TEXT_FILE = "chartIn.txt"
 =======
-# File path for seat data aiwufhqurfqiufr
+# File path for seat data
 >>>>>>> cff5e8159e5316a91e8bc6009dd567594999bafa:app/inputdata.py
 SEAT_DATA_FILE = "seats.csv"
 
