@@ -14,7 +14,7 @@ TEXT_FILE = "chartIn.txt"
 >>>>>>> cff5e8159e5316a91e8bc6009dd567594999bafa:app/inputdata.py
 SEAT_DATA_FILE = "seats.csv"
 
-# Load seat data from a text file or existing CSV
+# Load seat data from a text file or existing CSV iurgwieurgwieufgwf
 
 
 def load_seat_data():
