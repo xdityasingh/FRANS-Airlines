@@ -4,7 +4,7 @@ import os
 
 app = Flask(__name__)
 
-# File path for seat data
+# File path for seat data aiwufhqurfqiufr
 SEAT_DATA_FILE = "seats.csv"
 
 # Load seat data from a CSV file
