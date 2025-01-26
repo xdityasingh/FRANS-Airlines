@@ -1,0 +1,110 @@
+        table {
+            border-collapse: collapse;
+            width: 50%;
+            margin: 0 auto;
+        }
+        td {
+            width: 50px;
+            height: 50px;
+            text-align: center;
+            border: 1px solid black;
+            vertical-align: middle;
+        }
+        th {
+            height: 50px;
+            text-align: center;
+        }
+        .aisle {
+            background-color: white;
+            border-left: 2px solid black;
+        }
+        .economy .seat {
+            background-color: #f0f0f0;
+            cursor: pointer;
+        }
+        .occupied {
+            background-color: red;
+            color: white;
+        }
+        .available {
+            background-color: green;
+            color: white;
+        }
+        .ghost {
+            background-color: gray;
+            color: white;
+        }
+        .header-cell {
+            background-color: #f0f0f0;
+        }
+        .first-class .seat.reserved {
+            background-color: red !important;
+        }
+
+        .business-class .seat.reserved {
+            background-color: red !important;
+        }
+        
+        .reserved {
+            background-color: red !important;
+        }
+
+        .empty {
+            background-color: white;
+            cursor: default;
+            font-size: 18px;
+            font-weight: bold;
+            color: #888;
+        }
+        .seat-symbol {
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .wing {
+            background-color: lightblue;
+        }
+        .exit {
+            background-color: yellow;
+        }
+        .toilet, .kitchen {
+            background-color: lightgray;
+        }
+        .first-class .seat {
+            background-color: gold !important;
+        }
+
+        .business-class .seat {
+            background-color: lightblue !important;
+        }
+
+        .exit-row {
+            background-color: lightyellow; /* Acil çıkış koltukları için farklı renk */
+        }
+
+        .exit-door {
+            text-align: center;
+            font-size: 1em;
+            font-weight: bold;
+            color: red; /* Acil çıkış kapısı sembolü için renk */
+        }
+
+        .wing-image {
+            width: 100%;
+            height: auto;
+        }
+
+        .left-wing {
+            left: calc(9.5% + 0px);  /* Sağ kanadın solundan biraz mesafe ekliyoruz */
+            position: absolute;  /* Konumlandırma türünü absolute yapıyoruz */
+            top: calc(11 * 60px);  /* 8. sıradan başlayarak yerleştiriyoruz (sıra yüksekliğine göre ayar yapabilirsiniz) */
+            width: 250px;  /* Kanat görsellerinin genişliği */
+            height: auto;  /* Yüksekliği oranlı şekilde ayarlıyoruz */
+        }
+
+        .right-wing {
+            left: calc(50% + 392px);  /* Sağ kanadın solundan biraz mesafe ekliyoruz */
+            position: absolute;  /* Konumlandırma türünü absolute yapıyoruz */
+            top: calc(11 * 60px);  /* 8. sıradan başlayarak yerleştiriyoruz (sıra yüksekliğine göre ayar yapabilirsiniz) */
+            width: 250px;  /* Kanat görsellerinin genişliği */
+            height: auto;  /* Yüksekliği oranlı şekilde ayarlıyoruz */
+        }
