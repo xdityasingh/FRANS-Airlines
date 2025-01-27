@@ -56,7 +56,7 @@ def fetch_statistics(users, seats):
 @app.route("/", methods=["GET", "POST"])
 def index():
     # No statistics are shown on the homepage
-    return render_template("index2.html")
+    return render_template("statisticindex.html")
 
 
 # Route: Display statistics
@@ -64,7 +64,7 @@ def index():
 def display_statistics():
     users, seats = load_data()
     stats = fetch_statistics(users, seats)
-    return render_template("index2.html", stats=stats)
+    return render_template("statisticindex.html", stats=stats)
 
 
 # Route: Export statistics to text file
@@ -109,7 +109,7 @@ def chart():
     plt.close(fig)  # Schließen der Figur, um Speicher freizugeben
 
     chart_url = url_for('static', filename='chart.png')
-    return render_template("index2.html", chart=chart_url)
+    return render_template("statisticindex.html", chart=chart_url)
 
 
 
