@@ -94,17 +94,20 @@
         }
 
         .left-wing {
-            left: calc(9.5% + 0px);  /* Sağ kanadın solundan biraz mesafe ekliyoruz */
-            position: absolute;  /* Konumlandırma türünü absolute yapıyoruz */
-            top: calc(11 * 60px);  /* 8. sıradan başlayarak yerleştiriyoruz (sıra yüksekliğine göre ayar yapabilirsiniz) */
-            width: 250px;  /* Kanat görsellerinin genişliği */
-            height: auto;  /* Yüksekliği oranlı şekilde ayarlıyoruz */
+            position: absolute;
+            top: 86vh; /* Ekran yüksekliğinin %30'u */
+            left: 2.3vw; /* Ekran genişliğinin %10'u */
+            width: 27vw; /* Ekran genişliğinin %20'si */
+            height: auto; /* Oranı koruyarak yüksekliği otomatik ayarlar */
+            z-index: -1;
         }
-
+        
         .right-wing {
-            left: calc(50% + 392px);  /* Sağ kanadın solundan biraz mesafe ekliyoruz */
-            position: absolute;  /* Konumlandırma türünü absolute yapıyoruz */
-            top: calc(11 * 60px);  /* 8. sıradan başlayarak yerleştiriyoruz (sıra yüksekliğine göre ayar yapabilirsiniz) */
-            width: 250px;  /* Kanat görsellerinin genişliği */
-            height: auto;  /* Yüksekliği oranlı şekilde ayarlıyoruz */
+            position: absolute;
+            top: 87vh; /* Ekran yüksekliğinin %30'u */
+            right: 0.25vw; /* Ekran genişliğinin %10'u */
+            width: 29vw; /* Ekran genişliğinin %20'si */
+            height: auto;
+            z-index: -1;
         }
+        

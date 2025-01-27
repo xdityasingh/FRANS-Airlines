@@ -3,88 +3,241 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Seat Reservation System</title>
+    <title>Flight Seat Reservation</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='seats.css') }}">
     <style>
-        .available { background-color: green; color: white; cursor: pointer; }
-        .occupied { background-color: red; color: white; cursor: not-allowed; }
-        .ghost { background-color: gray; color: white; cursor: pointer; }
-        table { border-collapse: collapse; margin: auto; }
-        td { padding: 10px; text-align: center; }
-        td:hover { opacity: 0.8; }
-    </style>
-    <script>
-        function reserveSeat(seatId) {
-            fetch("/reserve", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ seat_id: seatId })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert(data.message);
-                    location.reload();
-                } else {
-                    alert(data.error);
-                }
-            });
+        /* Genel Stil */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f9;
         }
-    </script>
-</head>
-<body>
-    <h1>Seat Reservation System</h1>
-    <table border="1">
-        {% for seat in seats %}
-            {% if loop.index0 % 6 == 0 %}
-                <tr>
-            {% endif %}
-            <td class="{{ seat['Status'] }}" onclick="reserveSeat('{{ seat['Seat ID'] }}')">
-                {{ seat['Seat ID'] }}
-            </td>
-            {% if loop.index0 % 6 == 5 %}
-                </tr>
-            {% endif %}
-        {% endfor %}
-    </table>
-</body>
-</html>
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Seat Chart</title>
-    <style>
-        .seat-row {
-            font-family: monospace;
-            font-size: 1.5em;
-            margin-bottom: 10px;
+        h1, h2, h3 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            margin: 10px;
+            font-size: 16px;
+            text-decoration: none;
+            background-color: #4CAF50;
+            color: white;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        .btn:hover {
+            background-color: #45a049;
+        }
+        .content, .statistics, .chart, .footer {
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 80%;
         }
         .seat {
-            width: 30px;
+            width: 50px;
+            height: 50px;
             text-align: center;
+            line-height: 50px;
+            border: 1px solid #ccc;
+            cursor: pointer;
+        }
+        .available {
+            background-color: #90EE90;
+        }
+        .occupied {
+            background-color: #FF6347;
+        }
+        .reserved {
+            background-color: #FFD700;
+        }
+        .first-class {
+            background-color: #FFD700;
+        }
+        .business-class {
+            background-color: #4682B4;
+        }
+        .economy-class {
+            background-color: #90EE90;
         }
         .aisle {
-            width: 20px;
+            width: 30px;
+        }
+        .header-cell, .empty, .exit, .wing, .toilet {
             text-align: center;
+            font-weight: bold;
+        }
+        .wing {
+            font-style: italic;
+            background-color: #ADD8E6;
+        }
+        .toilet {
+            background-color: #D3D3D3;
+        }
+        .footer p {
+            font-size: 14px;
+            text-align: center;
+            color: #666;
+        }
+        .left-wing {
+            left: calc(0.005% + 0px);  /* Sol kanadın konumlandırılması */
+            position: absolute;
+            top: calc(21.5 * 60px);  /* Kanat, 11. sıradan itibaren yerleşiyor */
+            width: 250px;
+            height: auto;
+        }
+
+        .right-wing {
+            left: calc(64% + 392px);  /* Sağ kanadın konumlandırılması */
+            position: absolute;
+            top: calc(22.5 * 60px);  /* Kanat, 11. sıradan itibaren yerleşiyor */
+            width: 250px;
+            height: auto;
         }
     </style>
 </head>
 <body>
-    <h1>Seat Chart</h1>
-    <div>
-        {% for row_left, row_right in zip(left_side, right_side) %}
-            <div class="seat-row">
-                <div class="seat">{{ row_left[0] }}</div>
-                <div class="seat">{{ row_left[1] }}</div>
-                <div class="seat">{{ row_left[2] }}</div>
-                <div class="aisle">|</div>
-                <div class="seat">{{ row_right[0] }}</div>
-                <div class="seat">{{ row_right[1] }}</div>
-                <div class="seat">{{ row_right[2] }}</div>
-            </div>
-        {% endfor %}
-    </div>
+
+<h1>Flight Seat Reservation</h1>
+
+<!-- Navigation Buttons -->
+<div class="buttons" style="text-align: center;">
+    <a href="/" class="btn">Go to Dashboard</a>
+    <a href="/export" class="btn">Export Statistics</a>
+    <a href="/display" class="btn">Display Statistics</a>
+    <a href="/chart" class="btn">Show Chart</a>
+</div>
+
+<!-- Seat Statistics -->
+<div class="statistics">
+    <h2>Statistics Overview</h2>
+    <p><strong>Total Seats:</strong> {{ stats.total_seats }}</p>
+    <p><strong>Available Seats:</strong> {{ stats.available_seats }} ({{ stats.available_percentage }}%)</p>
+    <p><strong>Reserved Seats:</strong> {{ stats.reserved_seats }} ({{ stats.reserved_percentage }}%)</p>
+    <p><strong>Total Users:</strong> {{ stats.total_users }}</p>
+</div>
+
+<!-- Seat Availability Chart -->
+<div class="chart">
+    <h3>Seat Availability Chart</h3>
+    <img src="{{ chart }}" alt="Seat Availability Chart" style="max-width: 100%; height: auto;">
+</div>
+
+<!-- Seat Chart -->
+<h2>Seat Chart</h2>
+<table style="width: 80%; margin: auto; border-collapse: collapse; text-align: center;">
+    <tr>
+        <th class="header-cell"></th>
+        <th class="header-cell">A</th>
+        <th class="header-cell">B</th>
+        <th class="header-cell">C</th>
+        <th class="aisle">| |</th>
+        <th class="header-cell">D</th>
+        <th class="header-cell">E</th>
+        <th class="header-cell">F</th>
+    </tr>
+
+    <!-- Toilet Row at the Top -->
+    <tr>
+        <td class="empty"></td>
+        <td colspan="3" class="toilet">🚻</td>
+        <td class="aisle" id="seat_{{ i }}_| |" >| |</td>
+        <td colspan="3" class="empty"></td>
+    </tr>
+
+    <!-- First Class Rows -->
+{% for i in range(1, 3) %}  <!-- 2 row for First Class -->
+<tr class="first-class">
+    <th class="header-cell">{{ i }}</th>
+    <td class="seat available" id="seat_{{ i }}_A" onclick="reserveSeat('{{ i }}', 'A')">A</td>
+    <td class="seat available" id="seat_{{ i }}_B" onclick="reserveSeat('{{ i }}', 'B')">B</td>
+    <td class="seat available" id="seat_{{ i }}_C" onclick="reserveSeat('{{ i }}', 'C')">C</td>
+    <td class="aisle" id="seat_{{ i }}_| |" >| |</td>
+    <td class="seat available" id="seat_{{ i }}_D" onclick="reserveSeat('{{ i }}', 'D')">D</td>
+    <td class="seat available" id="seat_{{ i }}_E" onclick="reserveSeat('{{ i }}', 'E')">E</td>
+    <td class="seat available" id="seat_{{ i }}_F" onclick="reserveSeat('{{ i }}', 'F')">F</td>
+</tr>
+{% endfor %}
+
+<!-- Spacer Between First and Business Class -->
+<tr class="divider-row">
+    <td colspan="8"></td>
+</tr>
+
+<!-- Business Class Rows -->
+{% for i in range(3, 7) %}  <!-- 4 row for Business Class -->
+<tr class="business-class">
+    <th class="header-cell">{{ i }}</th>
+    <td class="seat available" id="seat_{{ i }}_A" onclick="reserveSeat('{{ i }}', 'A')">A</td>
+    <td class="seat available" id="seat_{{ i }}_B" onclick="reserveSeat('{{ i }}', 'B')">B</td>
+    <td class="seat available" id="seat_{{ i }}_C" onclick="reserveSeat('{{ i }}', 'C')">C</td>
+    <td class="aisle" id="seat_{{ i }}_| |" >| |</td>
+    <td class="seat available" id="seat_{{ i }}_D" onclick="reserveSeat('{{ i }}', 'D')">D</td>
+    <td class="seat available" id="seat_{{ i }}_E" onclick="reserveSeat('{{ i }}', 'E')">E</td>
+    <td class="seat available" id="seat_{{ i }}_F" onclick="reserveSeat('{{ i }}', 'F')">F</td>
+</tr>
+{% endfor %}
+
+<!-- Divider Between Business and Economy -->
+<tr class="business-divider">
+    <td colspan="8"></td>
+</tr>
+
+<!-- Exit Row with Emergency Doors -->
+        <tr class="exit-row">
+            <td class="empty"></td>
+            <td colspan="0.5" class="exit-door">EXIT ⬅</td> <!-- Exit door symbol -->
+            <td colspan="2.5" class="empty"></td>
+            <td class="aisle" id="seat_{{ i }}_| |" >| |</td>
+            <td colspan="2.5" class="empty"></td>
+            <td colspan="0.5" class="exit-door">EXIT ➡</td> <!-- Exit door symbol -->
+        </tr>
+
+<!-- Economy Rows -->
+{% for i in range(7, 37) %}  <!-- 30 row for Economy Class -->
+<tr>
+    <th class="header-cell">{{ i }}</th>
+    <td class="seat available" id="seat_{{ i }}_A" onclick="reserveSeat('{{ i }}', 'A')">A</td>
+    <td class="seat available" id="seat_{{ i }}_B" onclick="reserveSeat('{{ i }}', 'B')">B</td>
+    <td class="seat available" id="seat_{{ i }}_C" onclick="reserveSeat('{{ i }}', 'C')">C</td>
+    <td class="aisle" id="seat_{{ i }}_| |" >| |</td>
+    <td class="seat available" id="seat_{{ i }}_D" onclick="reserveSeat('{{ i }}', 'D')">D</td>
+    <td class="seat available" id="seat_{{ i }}_E" onclick="reserveSeat('{{ i }}', 'E')">E</td>
+    <td class="seat available" id="seat_{{ i }}_F" onclick="reserveSeat('{{ i }}', 'F')">F</td>
+</tr>
+{% endfor %}
+
+
+    <!-- Toilet Row at the Bottom -->
+    <tr>
+        <td class="empty"></td>
+        <td colspan="3" class="empty"></td>
+        <td class="aisle" id="seat_{{ i }}_| |" >| |</td>
+        <td colspan="3" class="toilet">🚻</td>
+    </tr>
+</table>
+
+<!-- Kanat Görselleri -->
+<img src="https://github.com/xdityasingh/FRANS-Airlines/raw/main/static/images/left-wing.png" class="left-wing" alt="Left Wing">
+<img src="https://github.com/xdityasingh/FRANS-Airlines/raw/main/static/images/right-wing.png" class="right-wing" alt="Right Wing"> 
+
+<!-- Footer -->
+<div class="footer">
+    <p>Note: Reserved seats are marked with an "X".</p>
+    <p>&copy; 2025 Flight Reservation System</p>
+</div>
+
+<script>
+    function reserveSeat(seatID) {
+        alert("You selected seat " + seatID + "!");
+    }
+</script>
+
 </body>
 </html>

@@ -1,56 +1,53 @@
 from flask import Flask, render_template, request, jsonify
 import pandas as pd
+import random 
 
 app = Flask(__name__)
 
-# Load or create seat data
+# Load seat data
 def load_seat_data():
-    try:
-        return pd.read_csv("seats.csv")
-    except FileNotFoundError:
-        return create_seat_data()
+    return pd.read_csv("seats.csv")  # Veritabanınızı bağlayabilirsiniz.
 
-# Save seat data to CSV
-def save_seat_data(dataframe):
-    dataframe.to_csv("seats.csv", index=False)
+# Save seat data
+def save_seat_data(seats_df):
+    seats_df.to_csv("seats.csv", index=False)
+import random
 
-# Create default seat data
-def create_seat_data(rows=5):
-    seat_data = []
-    positions = ['window', 'middle', 'aisle', 'aisle', 'middle', 'window']
-    statuses = ['available', 'occupied', 'ghost']
-    for row_label in "ABCDEF"[:rows]:
-        for col in range(1, 7):
-            seat_id = f"{row_label}{col}"
-            position = positions[col - 1]
-            status = "available"
-            if row_label == "A":
-                category = "business"
-                price = 200 if position == 'window' else 150 if position == 'aisle' else 120
-            else:
-                category = "economy"
-                price = 100 if position == 'window' else 80 if position == 'aisle' else 70
-            seat_data.append({'Seat ID': seat_id, 'Status': status, 'Category': category, 'Position': position, 'Price': price})
-    df = pd.DataFrame(seat_data)
-    save_seat_data(df)
-    return df
-
-@app.route('/')
-def seat_chart():
-    # Sol ve sağ taraflar için örnek koltuk düzeni
-    left_side = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10']
-    right_side = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J']
+def random_reserved_seats():
+    reserved_seats = []
+    while len(reserved_seats) < 5:
+        row = random.randint(1, 36)  # 1 ile 36 arasında rastgele satır
+        seat = random.choice(['A', 'B', 'C', 'D', 'E', 'F'])  # A-F arasında rastgele koltuk
+        seat_id = f"seat_{row}_{seat}"
+        
+        if seat_id not in reserved_seats:
+            reserved_seats.append(seat_id)
     
-    return render_template('seat_chart.html', left_side=left_side, right_side=right_side)
+    return reserved_seats
 
-if __name__ == '__main__':
-    app.run(debug=True)
-
+# Home route
 @app.route("/")
 def index():
-    seats_df = load_seat_data()
-    return render_template("index.html", seats=seats_df.to_dict(orient="records"))
+    seats_df = load_seat_data()  # Koltuk verilerini yükleyin
+    seats = seats_df.to_dict(orient="records")  # Veriyi sözlük haline getirin
 
+    # stats nesnesini oluşturun
+    stats = {
+        "total_seats": len(seats),
+        "available_seats": len([seat for seat in seats if seat["Status"] == "available"]),
+        "reserved_seats": len([seat for seat in seats if seat["Status"] == "reserved"]),
+    }
+
+    # stats'ı şablona gönderin
+    return render_template("index.html", seats=seats, stats=stats)
+
+# Seat chart route
+@app.route('/seat-chart')
+def seat_chart():
+    reserved_seats = random_reserved_seats()  # Rastgele rezerve edilmiş koltukları al
+    return render_template('index.html', reserved_seats=reserved_seats)
+
+# Reserve a seat
 @app.route("/reserve", methods=["POST"])
 def reserve_seat():
     seat_id = request.json.get("seat_id")
@@ -68,5 +65,30 @@ def reserve_seat():
             return jsonify({"error": f"Seat {seat_id} is already {current_status}."}), 400
     return jsonify({"error": "Invalid Seat ID."}), 400
 
+# Get a specific seat
+@app.route("/get_seat/<seat_id>", methods=["GET"])
+def get_seat(seat_id):
+    seats_df = load_seat_data()
+    seat = seats_df[seats_df["Seat ID"] == seat_id].to_dict(orient="records")
+    if seat:
+        return jsonify(seat[0])
+    return jsonify({"error": "Seat not found"}), 404
+
+# Update seat details
+@app.route("/update_seat", methods=["POST"])
+def update_seat():
+    data = request.json
+    seat_id = data.get("seat_id")
+    status = data.get("status")
+    category = data.get("category")
+    price = data.get("price")
+    
+    seats_df = load_seat_data()
+    if seat_id in seats_df["Seat ID"].values:
+        seats_df.loc[seats_df["Seat ID"] == seat_id, ["Status", "Category", "Price"]] = [status, category, price]
+        save_seat_data(seats_df)
+        return jsonify({"success": True, "message": f"Seat {seat_id} updated."})
+    return jsonify({"error": "Seat not found."}), 404
+
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, host="127.0.0.1", port=5000)
