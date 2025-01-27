@@ -6,12 +6,7 @@ import random
 
 app = Flask(__name__)
 
-<<<<<<< HEAD:inputdata.py
-# File paths
-TEXT_FILE = "chartIn.txt"
-=======
 # File path for seat data
->>>>>>> cff5e8159e5316a91e8bc6009dd567594999bafa:app/inputdata.py
 SEAT_DATA_FILE = "seats.csv"
 
 # Load seat data from a text file or existing CSV iurgwieurgwieufgwf
@@ -91,7 +86,7 @@ def index():
 
     # Create a dictionary of seats for each row
     seats = {row: seat_data[seat_data['Row'] == row].sort_values(by='Seat ID').to_dict(orient="records") for row in rows}
-    return render_template("index.html", seats=seats)
+    return render_template("inputindex.html", seats=seats)
 
 
 @app.route('/update_seat', methods=['POST'])

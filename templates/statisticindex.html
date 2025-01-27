@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f9;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            margin: 10px;
+            font-size: 16px;
+            text-decoration: none;
+            background-color: #4CAF50;
+            color: white;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        .btn:hover {
+            background-color: #45a049;
+        }
+        .content {
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .statistics, .chart {
+            background-color: white;
+            margin: 20px auto;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 50%;
+        }
+        .buttons {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Admin Dashboard</h1>
+
+<!-- Buttons Section -->
+<div class="buttons">
+    <a href="/" class="btn">Go to Dashboard</a>
+    <a href="/export" class="btn">Export Statistics</a>
+    <a href="/display" class="btn">Display Statistics</a> <!-- Button for displaying stats -->
+    <a href="/chart" class="btn">Show Chart</a> <!-- Button for showing chart -->
+</div>
+
+<!-- Display Statistics if Available -->
+{% if stats %}
+    <div class="statistics">
+        <h2>Seat Availability and User Statistics</h2>
+        <ul>
+            <li>Available Seats: {{ stats['available_seats'] }} ({{ stats['available_percentage'] }}%)</li>
+            <li>Reserved Seats: {{ stats['reserved_seats'] }} ({{ stats['reserved_percentage'] }}%)</li>
+            <li>Total Seats: {{ stats['total_seats'] }}</li>
+            <li>Total Users: {{ stats['total_users'] }}</li>
+        </ul>
+        <h3>Users</h3>
+        <ul>
+            {% for user in stats['users'] %}
+                <li>ID: {{ user.id }}, Name: {{ user.name }}, Email: {{ user.email }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+{% endif %}
+
+<!-- Show Chart if Available -->
+{% if chart %}
+    <div class="chart">
+        <h2>Seat Availability Visualization</h2>
+        <img src="{{ chart }}" alt="Seat Availability Chart" style="width: 100%; height: auto;">
+    </div>
+{% endif %}
+
+</body>
+</html>
