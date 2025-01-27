@@ -1,32 +1,32 @@
-</div>
-{% if logged_in %}
-<script>
-    document.getElementById("logout-link").addEventListener("click", function(event) {
-        event.preventDefault();
+    </div>
+    {% if logged_in %}
+    <script>
+        document.getElementById("logout-link").addEventListener("click", function(event) {
+            event.preventDefault();
 
-        const message = document.getElementById("logout-message");
-        message.style.display = "block";
+            const message = document.getElementById("logout-message");
+            message.style.display = "block";
 
-        setTimeout(function() {
-            window.location.href = "/logout";
-        }, 5000);
-    });
+            setTimeout(function() {
+                window.location.href = "/logout";
+            }, 5000);
+        });
 
-    function reserveSeat(row, column) {
-        const seat = document.getElementById(`seat_${row}_${column}`);
-        if (seat.classList.contains("available")) {
-            seat.classList.remove("available");
-            seat.classList.add("reserved");
-            alert(`Seat ${row}${column} reserved!`);
-        } else {
-            alert(`Seat ${row}${column} is already reserved.`);
+        function reserveSeat(row, column) {
+            const seat = document.getElementById(`seat_${row}_${column}`);
+            if (seat.classList.contains("available")) {
+                seat.classList.remove("available");
+                seat.classList.add("reserved");
+                alert(`Seat ${row}${column} reserved!`);
+            } else {
+                alert(`Seat ${row}${column} is already reserved.`);
+            }
         }
-    }
-</script>
-{% endif %}
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-    integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
-    crossorigin="anonymous"></script>
+    </script>
+    {% endif %}
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+        crossorigin="anonymous"></script>
 </body>
 
 </html>
