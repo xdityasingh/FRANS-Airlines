@@ -1,41 +1,39 @@
+import os
 import pandas as pd
-from flask import Flask, render_template, send_file, url_for
+from flask import Flask, render_template, redirect, request, session, send_file, url_for
 import matplotlib
-matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from io import BytesIO
+from frans import get_user  # Assuming this function works as expected.
 
-app = Flask(__name__)
+matplotlib.use('Agg')  # Use a non-interactive backend for Flask
 
-# Load data from CSV files or initialize if not available
+# Initialize Flask app
+app = Flask(
+    __name__,
+    template_folder="/Users/ninayehorova/projectfinalfinal/FRANS-Airlines/templates",
+    static_folder="/Users/ninayehorova/projectfinalfinal/FRANS-Airlines/static"
+)
+app.secret_key = "your_secret_key"
+
+# Hardcoded session for testing
+DEBUG_USER = {"email": "test@example.com", "name": "Test User"}
+session = {'user': DEBUG_USER}  # REMOVE THIS FOR PRODUCTION.
+
+# Helper function to load CSV data
 def load_data():
     try:
-        users = pd.read_csv("users.csv")
-        seats = pd.read_csv("seats.csv")
+        seats = pd.read_csv("/Users/ninayehorova/projectfinalfinal/FRANS-Airlines/data/seats.csv")
+        print("Seats data loaded successfully.")
     except FileNotFoundError:
-        # Initialize with sample data if files don't exist
-        users = pd.DataFrame(
-            {
-                "id": [1, 2, 3],
-                "name": ["Admin User", "User One", "User Two"],
-                "email": ["admin@example.com", "user1@example.com", "user2@example.com"],
-            }
-        )
-        seats = pd.DataFrame(
-            {
-                "seat_id": [1, 2, 3, 4, 5],
-                "status": ["available", "reserved", "available", "reserved", "available"],
-                "category": ["economy", "business", "first", "economy", "business"],
-                "price": [100.0, 300.0, 500.0, 120.0, 400.0],
-            }
-        )
-    return users, seats
+        print("Seats.csv not found!")
+        return None
+    return seats
 
-
-# Fetch statistics
+# Helper function to fetch statistics
 def fetch_statistics(users, seats):
-    available_seats = seats[seats["status"] == "available"].shape[0]
-    reserved_seats = seats[seats["status"] == "reserved"].shape[0]
+    available_seats = seats[seats["Status"] == "Available"].shape[0]
+    reserved_seats = seats[seats["Status"] == "Reserved"].shape[0]
     total_seats = len(seats)
 
     available_percentage = (available_seats / total_seats) * 100 if total_seats > 0 else 0
@@ -51,67 +49,85 @@ def fetch_statistics(users, seats):
         "total_users": len(users),
     }
 
-
-# Route: Homepage
+# Main route
 @app.route("/", methods=["GET", "POST"])
 def index():
-    # No statistics are shown on the homepage
-    return render_template("statisticindex.html")
+    print(f"Session: {session}")
+    user = session.get('user', DEBUG_USER)  # Use hardcoded user for testing.
+    return render_template("statisticindex.html", user=user)
 
-
-# Route: Display statistics
+# Route to display statistics
 @app.route("/display")
 def display_statistics():
-    users, seats = load_data()
+    print(f"Session: {session}")
+    users = pd.DataFrame([session.get('user', DEBUG_USER)])  # Use hardcoded user.
+    seats = load_data()
+    if seats is None:
+        return render_template("statisticindex.html", message="Seats data is missing!")
+    
     stats = fetch_statistics(users, seats)
     return render_template("statisticindex.html", stats=stats)
 
-
-# Route: Export statistics to text file
+# Route to export statistics
 @app.route("/export")
 def export():
-    users, seats = load_data()
+    print(f"Session: {session}")
+    users = pd.DataFrame([session.get('user', DEBUG_USER)])  # Use hardcoded user.
+    seats = load_data()
+    if seats is None:
+        return render_template("statisticindex.html", message="Seats data is missing!")
+    
     stats = fetch_statistics(users, seats)
-
-    file_path = "statistics.txt"
+    
+    # Define the data folder path
+    data_dir = "/Users/ninayehorova/projectfinalfinal/FRANS-Airlines/data/"
+    os.makedirs(data_dir, exist_ok=True)  # Ensure the folder exists
+    file_path = os.path.join(data_dir, "statistics.txt")
+    
+    # Write statistics to the file
     with open(file_path, "w") as file:
         file.write(f"Available Seats: {stats['available_seats']} ({stats['available_percentage']:.2f}%)\n")
         file.write(f"Reserved Seats: {stats['reserved_seats']} ({stats['reserved_percentage']:.2f}%)\n")
         file.write(f"Total Seats: {stats['total_seats']}\n\n")
         file.write("Users:\n")
         for user in stats["users"]:
-            file.write(f"ID: {user['id']}, Name: {user['name']}, Email: {user['email']}\n")
+            file.write(f"ID: {user.get('id', 'N/A')}, Name: {user['name']}, Email: {user['email']}\n")
         file.write(f"\nTotal Users: {stats['total_users']}")
-
+    
     return send_file(file_path, as_attachment=True)
 
-
-# Route: Show chart
-
-
+# Route to display a pie chart
 @app.route("/chart")
 def chart():
-    users, seats = load_data()
+    print(f"Session: {session}")
+    users = pd.DataFrame([session.get('user', DEBUG_USER)])  # Use hardcoded user.
+    seats = load_data()
+    if seats is None:
+        return render_template("statisticindex.html", message="Seats data is missing!")
+    
     stats = fetch_statistics(users, seats)
-
+    
+    # Create chart
     fig, ax = plt.subplots(figsize=(5, 5))
     labels = ["Available Seats", "Reserved Seats"]
     sizes = [stats["available_percentage"], stats["reserved_percentage"]]
     colors = ["green", "red"]
     explode = (0.1, 0)
-
     ax.pie(sizes, explode=explode, labels=labels, colors=colors, autopct="%1.1f%%", shadow=True, startangle=140)
     ax.set_title("Seat Availability")
-
-    # Speichern des Diagramms in der Datei
-    chart_path = "static/chart.png"
+    
+    # Define the static directory path
+    static_dir = "/Users/ninayehorova/projectfinalfinal/FRANS-Airlines/static/"
+    os.makedirs(static_dir, exist_ok=True)  # Ensure the folder exists
+    chart_path = os.path.join(static_dir, "chart.png")
+    
+    # Save chart
     fig.savefig(chart_path, format="png")
-    plt.close(fig)  # Schließen der Figur, um Speicher freizugeben
-
+    plt.close(fig)
+    
     chart_url = url_for('static', filename='chart.png')
     return render_template("statisticindex.html", chart=chart_url)
 
-
-
+# Run the app
 if __name__ == "__main__":
     app.run(debug=True)
