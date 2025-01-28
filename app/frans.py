@@ -1,4 +1,4 @@
-from flask import Flask, render_template, session, redirect, request
+from flask import Flask, render_template, session, redirect, request, jsonify
 import sqlite3
 import hashlib
 import uuid
