@@ -1,20 +1,18 @@
 import pandas as pd
-from flask import Flask, render_template, send_file, url_for, session
-
+from flask import Flask, render_template, redirect, request, session, send_file, url_for
 import matplotlib
-matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from io import BytesIO
 from frans import get_user
 
+matplotlib.use('Agg')
 
 app = Flask(__name__, template_folder="/Users/ninayehorova/projectfinalfinal/FRANS-Airlines/templates")
-app.secret_key = "your_secret_key"  
-
+app.secret_key = "your_secret_key"
 
 def load_data():
     try:
-        seats = pd.read_csv("seats.csv")
+        seats = pd.read_csv("/Users/ninayehorova/projectfinalfinal/FRANS-Airlines/data/seats.csv")
     except FileNotFoundError:
         return None
     return seats
@@ -47,19 +45,27 @@ def index():
 
 @app.route("/display")
 def display_statistics():
+    if 'user' not in session or 'email' not in session['user']:
+        return redirect('/')  # Redirect to login page if not logged in
+
     users = pd.DataFrame([user for user in [get_user(email=session['user']['email'])] if user])
     seats = load_data()
     if seats is None:
         return render_template("statisticindex.html", message="Seats data is missing!")
+    
     stats = fetch_statistics(users, seats)
     return render_template("statisticindex.html", stats=stats)
 
 @app.route("/export")
 def export():
+    if 'user' not in session or 'email' not in session['user']:
+        return redirect('/')  # Redirect to login page if not logged in
+
     users = pd.DataFrame([user for user in [get_user(email=session['user']['email'])] if user])
     seats = load_data()
     if seats is None:
         return render_template("statisticindex.html", message="Seats data is missing!")
+    
     stats = fetch_statistics(users, seats)
     file_path = "statistics.txt"
     with open(file_path, "w") as file:
@@ -74,10 +80,14 @@ def export():
 
 @app.route("/chart")
 def chart():
+    if 'user' not in session or 'email' not in session['user']:
+        return redirect('/')  # Redirect to login page if not logged in
+
     users = pd.DataFrame([user for user in [get_user(email=session['user']['email'])] if user])
     seats = load_data()
     if seats is None:
         return render_template("statisticindex.html", message="Seats data is missing!")
+    
     stats = fetch_statistics(users, seats)
     fig, ax = plt.subplots(figsize=(5, 5))
     labels = ["Available Seats", "Reserved Seats"]
