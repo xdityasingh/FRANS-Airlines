@@ -4,10 +4,14 @@ import os
 import random
 
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder='/Users/ninayehorova/projectfinalfinal/FRANS-Airlines/templates')
+
 
 # File path for seat data
-SEAT_DATA_FILE = "seats.csv"
+#SEAT_DATA_FILE = "seats.csv"
+SEAT_DATA_FILE = "/Users/ninayehorova/projectfinalfinal/FRANS-Airlines/data/seats.csv"
+TEXT_FILE = "/Users/ninayehorova/projectfinalfinal/FRANS-Airlines/data/chartIn.txt"
+
 
 # Load seat data from a text file or existing CSV iurgwieurgwieufgwf
 
